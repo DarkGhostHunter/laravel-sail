@@ -13,6 +13,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=80"
 ENV SUPERVISOR_PHP_USER="sail"
+ENV SUPERVISOR_SSH_COMMAND="/usr/sbin/sshd -D"
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
@@ -60,6 +61,15 @@ RUN setcap "cap_net_bind_service=+ep" /usr/bin/php8.3
 RUN userdel -r ubuntu
 RUN groupadd --force -g $WWWGROUP sail
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
+
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y openssh-server \
+    && apt-get -y autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN mkdir /var/run/sshd
+RUN useradd -m -s /bin/bash sail && echo "sail:sail" | chpasswd && usermod -aG sudo sail
+RUN sed -i 's/#PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
 COPY start-container /usr/local/bin/start-container
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
