@@ -9,7 +9,7 @@ if [ ! -z "$WWWUSER" ]; then
     usermod -u $WWWUSER sail
 fi
 
-if [ ! -z "$SSH_PASSWORD"]; then
+if [ ! -z "$SSH_PASSWORD" ]; then
     echo "sail:$SSH_PASSWORD" | chpasswd
 fi
 
